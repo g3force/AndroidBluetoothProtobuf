@@ -1,0 +1,4 @@
+option java_outer_classname = "SimpleMessageProtos";
+message SimpleMessage {
+	required string message = 2;
+}
