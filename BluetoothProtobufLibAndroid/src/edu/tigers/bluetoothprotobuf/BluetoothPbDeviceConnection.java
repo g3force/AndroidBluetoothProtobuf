@@ -19,7 +19,7 @@ public class BluetoothPbDeviceConnection
 	private final BluetoothSocket	socket;
 	private final OutputStream		outputStream;
 	private final InputStream		inputStream;
-	private final String				remoteDeviceName;
+	private final String				remoteDeviceId;
 	
 	
 	// --------------------------------------------------------------------------
@@ -29,12 +29,12 @@ public class BluetoothPbDeviceConnection
 	/**
 	 * 
 	 * @param socket
-	 * @param remoteDeviceName
+	 * @param remoteDeviceId
 	 */
-	public BluetoothPbDeviceConnection(final BluetoothSocket socket, final String remoteDeviceName)
+	public BluetoothPbDeviceConnection(final BluetoothSocket socket, final String remoteDeviceId)
 	{
 		this.socket = socket;
-		this.remoteDeviceName = remoteDeviceName;
+		this.remoteDeviceId = remoteDeviceId;
 		
 		InputStream in = null;
 		try
@@ -57,7 +57,7 @@ public class BluetoothPbDeviceConnection
 		inputStream = in;
 		outputStream = out;
 		
-		log.debug("New connection for device " + remoteDeviceName);
+		log.debug("New connection for device " + remoteDeviceId);
 	}
 	
 	
@@ -119,8 +119,8 @@ public class BluetoothPbDeviceConnection
 	/**
 	 * @return the remoteDeviceName
 	 */
-	public final String getRemoteDeviceName()
+	public final String getRemoteDeviceId()
 	{
-		return remoteDeviceName;
+		return remoteDeviceId;
 	}
 }

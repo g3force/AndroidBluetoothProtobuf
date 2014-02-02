@@ -98,7 +98,7 @@ public class BluetoothPbLocal extends ABluetoothPb
 		final List<BluetoothPbDeviceConnection> toBeRemoved = new LinkedList<BluetoothPbDeviceConnection>();
 		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
 		{
-			if ((id != null) && id.equals(devCon.getRemoteDeviceName()))
+			if ((id != null) && id.equals(devCon.getRemoteDeviceId()))
 			{
 				toBeRemoved.add(devCon);
 				devCon.close();
@@ -142,7 +142,7 @@ public class BluetoothPbLocal extends ABluetoothPb
 			
 			for (final BluetoothPbDeviceConnection devCon : deviceConnections)
 			{
-				if (deviceName.equals(devCon.getRemoteDeviceName()))
+				if (deviceName.equals(devCon.getRemoteDeviceId()))
 				{
 					log.debug("Device already connected.");
 					return;
@@ -156,10 +156,15 @@ public class BluetoothPbLocal extends ABluetoothPb
 		log.debug("Connecting to device " + deviceName);
 		
 		final String service = BluetoothService.discoverService(APP_UUID_STR_VAR2, device);
+		if (service == null)
+		{
+			log.error("No service found for device " + deviceName);
+			return;
+		}
 		try
 		{
 			final StreamConnection streamCon = BluetoothService.createStreamConnection(service);
-			onConnectionEstablished(streamCon, deviceName);
+			onConnectionEstablished(streamCon, device.getBluetoothAddress());
 		} catch (final IOException e)
 		{
 			log.error("Could not create stream connection for service: " + service + " on device " + deviceName);

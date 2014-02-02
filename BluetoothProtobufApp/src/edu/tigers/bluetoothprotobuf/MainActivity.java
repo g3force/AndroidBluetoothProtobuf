@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -202,6 +203,9 @@ public class MainActivity extends Activity
 					final TextView txtView = (TextView) findViewById(R.id.textView1);
 					final SimpleMessage msg = (SimpleMessage) message;
 					txtView.append(msg.getMessage() + "\n");
+					
+					final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView1);
+					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 				}
 			});
 		}
@@ -218,6 +222,9 @@ public class MainActivity extends Activity
 				{
 					final TextView txtView = (TextView) findViewById(R.id.textView1);
 					txtView.append("Connection established\n");
+					
+					final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView1);
+					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 				}
 			});
 		}

@@ -85,9 +85,9 @@ public class BluetoothPbRemote extends ABluetoothPb
 	
 	private void onConnectionEstablished(final BluetoothSocket socket)
 	{
-		final BluetoothPbDeviceConnection devCon = new BluetoothPbDeviceConnection(socket, currentBtDevice.getName());
+		final BluetoothPbDeviceConnection devCon = new BluetoothPbDeviceConnection(socket, currentBtDevice.getAddress());
 		deviceConnections.add(devCon);
-		this.openInputConnection(devCon.getInputStream(), currentBtDevice.getName());
+		this.openInputConnection(devCon.getInputStream(), currentBtDevice.getAddress());
 		log.debug("Connection established");
 		notifyConnectionEstablished();
 	}
@@ -99,7 +99,7 @@ public class BluetoothPbRemote extends ABluetoothPb
 		final List<BluetoothPbDeviceConnection> toBeRemoved = new LinkedList<BluetoothPbDeviceConnection>();
 		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
 		{
-			if ((id != null) && id.equals(devCon.getRemoteDeviceName()))
+			if ((id != null) && id.equals(devCon.getRemoteDeviceId()))
 			{
 				toBeRemoved.add(devCon);
 				devCon.close();
