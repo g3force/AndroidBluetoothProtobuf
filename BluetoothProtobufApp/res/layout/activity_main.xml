@@ -23,7 +23,8 @@
         android:layout_alignBottom="@+id/button1"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/button1" />
+        android:layout_toLeftOf="@+id/button1"
+        android:entries="@array/devices_array" />
 
     <EditText
         android:id="@+id/editText1"

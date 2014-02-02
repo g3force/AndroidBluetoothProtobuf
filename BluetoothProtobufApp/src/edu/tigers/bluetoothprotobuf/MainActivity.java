@@ -78,7 +78,7 @@ public class MainActivity extends Activity
 			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 		} else
 		{
-			startBtPbService();
+			fillSpinner();
 		}
 	}
 	
@@ -101,7 +101,7 @@ public class MainActivity extends Activity
 			if (arg1 == RESULT_OK)
 			{
 				Toast.makeText(getApplicationContext(), "BT enabled", Toast.LENGTH_LONG).show();
-				startBtPbService();
+				fillSpinner();
 			} else
 			{
 				Toast.makeText(getApplicationContext(), "BT not enabled", Toast.LENGTH_LONG).show();
@@ -111,13 +111,10 @@ public class MainActivity extends Activity
 	}
 	
 	
-	private void startBtPbService()
+	private void fillSpinner()
 	{
-		btPbService = new BluetoothPbRemote(new MessageContainer(EMessage.values()));
-		btPbService.addObserver(new MessageReceiver());
-		
 		final Map<CharSequence, BluetoothDevice> devices = new HashMap<CharSequence, BluetoothDevice>();
-		for (final BluetoothDevice dev : btPbService.getAvailableBluetoothDevices())
+		for (final BluetoothDevice dev : BluetoothAdapter.getDefaultAdapter().getBondedDevices())
 		{
 			devices.put(dev.getName(), dev);
 		}
@@ -133,7 +130,14 @@ public class MainActivity extends Activity
 			@Override
 			public void onItemSelected(final AdapterView<?> arg0, final View arg1, final int arg2, final long arg3)
 			{
-				btPbService.setCurrentBtDevice(devices.get(spinner.getSelectedItem()));
+				if (btPbService != null)
+				{
+					btPbService.stop();
+				}
+				btPbService = new BluetoothPbRemote(new MessageContainer(EMessage.values()), devices.get(spinner
+						.getSelectedItem()));
+				btPbService.addObserver(new MessageReceiver());
+				btPbService.start();
 			}
 			
 			
@@ -149,9 +153,27 @@ public class MainActivity extends Activity
 	protected void onStart()
 	{
 		super.onStart();
-		if ((btPbService != null) && !btPbService.isActive())
+	}
+	
+	
+	@Override
+	protected void onResume()
+	{
+		super.onStart();
+		if ((btPbService != null))
 		{
 			btPbService.start();
+		}
+	}
+	
+	
+	@Override
+	protected void onPause()
+	{
+		super.onStop();
+		if ((btPbService != null))
+		{
+			btPbService.stop();
 		}
 	}
 	
@@ -160,10 +182,6 @@ public class MainActivity extends Activity
 	protected void onStop()
 	{
 		super.onStop();
-		if ((btPbService != null) && btPbService.isActive())
-		{
-			btPbService.stop();
-		}
 	}
 	
 	

@@ -1,8 +1,8 @@
 package edu.tigers.bluetoothprotobuf;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -101,7 +101,7 @@ public class BluetoothService
 	/**
 	 * Discover specified service on device and return connection url
 	 * 
-	 * @param strServiceUUID
+	 * @param strServiceUUID (without -)
 	 * @param device
 	 * @return
 	 */
@@ -198,25 +198,46 @@ public class BluetoothService
 	
 	
 	/**
-	 * @param serverURL
+	 * @param serviceURL
 	 */
-	public static OutputStream createOutputStream(final String serverURL) throws IOException
+	public static StreamConnection createStreamConnection(final String serviceURL) throws IOException
 	{
-		log.debug("Connecting to " + serverURL);
+		log.debug("Connecting to " + serviceURL);
 		
-		final StreamConnection con = (StreamConnection) Connector.open(serverURL);
-		return con.openOutputStream();
+		final StreamConnection con = (StreamConnection) Connector.open(serviceURL);
+		return con;
 	}
 	
 	
 	/**
-	 * @param serverURL
+	 * Retrieve preknown devices. This will be faster than starting an inquiry process,
+	 * but may not work depending on the system.
+	 * The bluecove-bluez library is needed for Linux and the dbus.jar must be in class path
+	 * in order to get devices, because communication via dbus is required.
+	 * 
+	 * @return
 	 */
-	public static StreamConnection createStreamConnection(final String serverURL) throws IOException
+	public static List<RemoteDevice> retrieveKnownDevices()
 	{
-		log.debug("Connecting to " + serverURL);
+		try
+		{
+			final RemoteDevice[] devices = LocalDevice.getLocalDevice().getDiscoveryAgent()
+					.retrieveDevices(DiscoveryAgent.PREKNOWN);
+			
+			for (final RemoteDevice dev : devices)
+			{
+				log.debug("Found cached device: " + dev.getFriendlyName(false));
+			}
+			
+			return Arrays.asList(devices);
+		} catch (final BluetoothStateException e)
+		{
+			log.error("Could not retrieve bt devices.", e);
+		} catch (final IOException e)
+		{
+			log.error("Error retrieving bt devices", e);
+		}
 		
-		final StreamConnection con = (StreamConnection) Connector.open(serverURL);
-		return con;
+		return new ArrayList<RemoteDevice>();
 	}
 }

@@ -17,20 +17,18 @@ public abstract class ABluetoothPb
 	// --------------------------------------------------------------------------
 	// --- variables and constants ----------------------------------------------
 	// --------------------------------------------------------------------------
-	private static final Logger				log							= Logger.getLogger(ABluetoothPb.class.getName());
+	private static final Logger				log					= Logger.getLogger(ABluetoothPb.class.getName());
 	
 	/** Name for the SDP record when creating server socket */
-	protected static final String				APP_NAME						= "BluetoothBtService";
+	protected static final String				APP_NAME				= "BluetoothBtService";
 	
 	/** Unique UUID for this application */
-	protected static final String				APP_UUID_STR_VAR1			= "04c6093b-0000-1000-8000-00805f9b34fb";
-	protected static final String				APP_UUID_STR_VAR2			= "04c6093b00001000800000805f9b34fb";
+	protected static final String				APP_UUID_STR_VAR1	= "04c6093b-0000-1000-8000-00805f9b34fb";
+	protected static final String				APP_UUID_STR_VAR2	= "04c6093b00001000800000805f9b34fb";
 	
-	private final List<IMessageObserver>	observers					= new CopyOnWriteArrayList<IMessageObserver>();
+	private final List<IMessageObserver>	observers			= new CopyOnWriteArrayList<IMessageObserver>();
 	private final MessageContainer			msgContainer;
-	private boolean								active						= false;
-	
-	private boolean								connectionThreadActive	= false;
+	private boolean								active				= false;
 	
 	
 	// --------------------------------------------------------------------------
@@ -122,11 +120,14 @@ public abstract class ABluetoothPb
 	public abstract void sendMessage(final IMessageType msgType, final byte[] data);
 	
 	
-	protected void openInputConnection(final InputStream in)
+	protected abstract void onConnectionLost(String id);
+	
+	
+	protected void openInputConnection(final InputStream in, final String id)
 	{
-		if (!connectionThreadActive)
+		if (in != null)
 		{
-			new Thread(new InputConnectionThread(in), "InputConnection").start();
+			new Thread(new InputConnectionThread(in, id), "InputConnection-" + id).start();
 		}
 	}
 	
@@ -157,14 +158,16 @@ public abstract class ABluetoothPb
 	{
 		private final InputStream	in;
 		private boolean				active	= true;
+		private final String			id;
 		
 		
 		/**
 		 * @param socket
 		 */
-		private InputConnectionThread(final InputStream in)
+		private InputConnectionThread(final InputStream in, final String id)
 		{
 			this.in = in;
+			this.id = id;
 		}
 		
 		
@@ -178,7 +181,6 @@ public abstract class ABluetoothPb
 			
 			while (active)
 			{
-				connectionThreadActive = true;
 				try
 				{
 					// Read from the InputStream
@@ -205,17 +207,21 @@ public abstract class ABluetoothPb
 						System.arraycopy(buffer, 2, messageData, 0, length);
 						final Message msg = mt.getProtoMsg().newBuilderForType().mergeFrom(messageData).build();
 						notifyNewMessageArrived(mt, msg);
+					} else
+					{
+						log.info("No data available. Closing stream.");
+						active = false;
 					}
 				} catch (final IOException e)
 				{
-					log.info("disconnected from input connecton");
+					log.info("disconnected from input connection");
 					active = false;
 				} catch (final UninitializedMessageException e)
 				{
 					log.error("Message is uninitialzed?!", e);
 				}
 			}
-			connectionThreadActive = false;
+			onConnectionLost(id);
 		}
 	}
 }

@@ -1,16 +1,16 @@
 package edu.tigers.bluetoothprotobuf;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
+
+import org.apache.log4j.Logger;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
 
 
 public class BluetoothPbRemote extends ABluetoothPb
@@ -19,16 +19,16 @@ public class BluetoothPbRemote extends ABluetoothPb
 	// --- variables and constants ----------------------------------------------
 	// --------------------------------------------------------------------------
 	
-	private static final String		TAG					= BluetoothPbRemote.class.getName();
-	/** debug */
-	private static final boolean		D						= true;
+	private static final Logger							log					= Logger.getLogger(BluetoothPbRemote.class
+																									.getName());
 	
-	private final BluetoothAdapter	mAdapter;
+	private final BluetoothAdapter						mAdapter;
 	
-	private AcceptThread					acceptThread		= null;
-	private BluetoothSocket				currentBtSocket	= null;
+	private AcceptThread										acceptThread		= null;
 	
-	private BluetoothDevice				currentBtDevice	= null;
+	private final BluetoothDevice							currentBtDevice;
+	
+	private final List<BluetoothPbDeviceConnection>	deviceConnections	= new LinkedList<BluetoothPbDeviceConnection>();
 	
 	static
 	{
@@ -40,22 +40,11 @@ public class BluetoothPbRemote extends ABluetoothPb
 	// --- constructors ---------------------------------------------------------
 	// --------------------------------------------------------------------------
 	
-	public BluetoothPbRemote(final MessageContainer msgContainer)
+	public BluetoothPbRemote(final MessageContainer msgContainer, final BluetoothDevice device)
 	{
 		super(msgContainer);
 		mAdapter = BluetoothAdapter.getDefaultAdapter();
-		
-		final Set<BluetoothDevice> devices = mAdapter.getBondedDevices();
-		if (devices.isEmpty())
-		{
-			Log.e(TAG, "No devices to connect to...");
-			return;
-		}
-		currentBtDevice = devices.iterator().next();
-		if (devices.size() > 1)
-		{
-			Log.w(TAG, "More than device available! Choose " + currentBtDevice.getName());
-		}
+		currentBtDevice = device;
 	}
 	
 	
@@ -66,21 +55,12 @@ public class BluetoothPbRemote extends ABluetoothPb
 	@Override
 	public void start()
 	{
-		if (D)
-		{
-			Log.d(TAG, "BEGIN start btPb service");
-		}
-		if (isActive())
-		{
-			stop();
-		}
+		log.debug("BEGIN start btPb service");
+		stop();
+		super.start();
 		acceptThread = new AcceptThread();
 		new Thread(acceptThread, "Bt_Accept").start();
-		super.start();
-		if (D)
-		{
-			Log.d(TAG, "END start btPb service");
-		}
+		log.debug("END start btPb service");
 	}
 	
 	
@@ -88,54 +68,44 @@ public class BluetoothPbRemote extends ABluetoothPb
 	public void stop()
 	{
 		super.stop();
-		if (D)
-		{
-			Log.d(TAG, "BEGIN stop btPb service");
-		}
+		log.debug("BEGIN stop btPb service");
 		if (acceptThread != null)
 		{
 			acceptThread.cancel();
+			acceptThread = null;
 		}
-		if (currentBtSocket != null)
+		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
 		{
-			try
-			{
-				currentBtSocket.close();
-			} catch (final IOException e)
-			{
-				Log.e(TAG, "current bt socket could not be closed", e);
-			}
+			devCon.close();
 		}
-		if (D)
-		{
-			Log.d(TAG, "END stop btPb service");
-		}
+		deviceConnections.clear();
+		log.debug("END stop btPb service");
 	}
 	
 	
 	private void onConnectionEstablished(final BluetoothSocket socket)
 	{
-		if (currentBtSocket != null)
+		final BluetoothPbDeviceConnection devCon = new BluetoothPbDeviceConnection(socket, currentBtDevice.getName());
+		deviceConnections.add(devCon);
+		this.openInputConnection(devCon.getInputStream(), currentBtDevice.getName());
+		log.debug("Connection established");
+		notifyConnectionEstablished();
+	}
+	
+	
+	@Override
+	protected void onConnectionLost(final String id)
+	{
+		final List<BluetoothPbDeviceConnection> toBeRemoved = new LinkedList<BluetoothPbDeviceConnection>();
+		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
 		{
-			Log.w(TAG, "New connection established, but old connection still exists. Closing old one.");
-			try
+			if ((id != null) && id.equals(devCon.getRemoteDeviceName()))
 			{
-				currentBtSocket.close();
-			} catch (final IOException e)
-			{
-				Log.e(TAG, "current bt socket could not be closed", e);
+				toBeRemoved.add(devCon);
+				devCon.close();
 			}
 		}
-		currentBtSocket = socket;
-		try
-		{
-			openInputConnection(socket.getInputStream());
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Could not open inputstream for connection");
-		}
-		Log.d(TAG, "Connection established");
-		notifyConnectionEstablished();
+		deviceConnections.removeAll(toBeRemoved);
 	}
 	
 	
@@ -143,27 +113,18 @@ public class BluetoothPbRemote extends ABluetoothPb
 	public void sendMessage(final IMessageType msgType, final byte[] data)
 	{
 		refreshOutgoingConnection();
-		if (currentBtSocket == null)
+		if (deviceConnections.isEmpty())
 		{
-			Log.e(TAG, "Could not send message. No open socket.");
+			log.error("Could not send message. No open connections.");
 			return;
 		}
-		try
-		{
-			final OutputStream out = currentBtSocket.getOutputStream();
-			sendMessage(msgType, data, out);
-			final InputStream in = currentBtSocket.getInputStream();
-			openInputConnection(in);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Could not open outputstream for bt socket");
-		}
+		sendMessage(msgType, data, deviceConnections.get(0).getOutputStream());
 	}
 	
 	
 	private void refreshOutgoingConnection()
 	{
-		if ((currentBtSocket != null) && currentBtSocket.isConnected())
+		if (!deviceConnections.isEmpty())
 		{
 			return;
 		}
@@ -173,10 +134,10 @@ public class BluetoothPbRemote extends ABluetoothPb
 			final BluetoothSocket socket = currentBtDevice.createRfcommSocketToServiceRecord(UUID
 					.fromString(APP_UUID_STR_VAR1));
 			socket.connect();
-			currentBtSocket = socket;
+			onConnectionEstablished(socket);
 		} catch (final IOException e)
 		{
-			Log.e(TAG, "Could not connect to " + currentBtDevice.getName(), e);
+			log.error("Could not connect to " + currentBtDevice.getName(), e);
 		}
 	}
 	
@@ -204,7 +165,7 @@ public class BluetoothPbRemote extends ABluetoothPb
 				tmp = mAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, UUID.fromString(APP_UUID_STR_VAR1));
 			} catch (final IOException e)
 			{
-				Log.e(TAG, "Could not listen on bt adapter", e);
+				log.error("Could not listen on bt adapter", e);
 			}
 			mmServerSocket = tmp;
 		}
@@ -213,10 +174,7 @@ public class BluetoothPbRemote extends ABluetoothPb
 		@Override
 		public void run()
 		{
-			if (D)
-			{
-				Log.d(TAG, "BEGIN mAcceptThread");
-			}
+			log.debug("BEGIN mAcceptThread");
 			
 			while (isActive())
 			{
@@ -228,23 +186,17 @@ public class BluetoothPbRemote extends ABluetoothPb
 					onConnectionEstablished(socket);
 				} catch (final IOException e)
 				{
-					Log.e(TAG, "Canceled accept()");
+					log.error("Canceled accept()");
 				}
 			}
-			if (D)
-			{
-				Log.d(TAG, "END mAcceptThread");
-			}
+			log.debug("END mAcceptThread");
 			closeSocket();
 		}
 		
 		
 		public void cancel()
 		{
-			if (D)
-			{
-				Log.d(TAG, "cancel");
-			}
+			log.debug("cancel");
 			closeSocket();
 		}
 		
@@ -256,7 +208,7 @@ public class BluetoothPbRemote extends ABluetoothPb
 				mmServerSocket.close();
 			} catch (final IOException e)
 			{
-				Log.e(TAG, "close() of server failed");
+				log.error("close() of server failed");
 			}
 		}
 	}
@@ -265,32 +217,5 @@ public class BluetoothPbRemote extends ABluetoothPb
 	// --------------------------------------------------------------------------
 	// --- getter/setter --------------------------------------------------------
 	// --------------------------------------------------------------------------
-	
-	
-	public Set<BluetoothDevice> getAvailableBluetoothDevices()
-	{
-		final Set<BluetoothDevice> devices = mAdapter.getBondedDevices();
-		return devices;
-	}
-	
-	
-	/**
-	 * @return the currentBtDevice
-	 */
-	public final BluetoothDevice getCurrentBtDevice()
-	{
-		return currentBtDevice;
-	}
-	
-	
-	/**
-	 * @param currentBtDevice the currentBtDevice to set
-	 */
-	public final void setCurrentBtDevice(final BluetoothDevice currentBtDevice)
-	{
-		stop();
-		this.currentBtDevice = currentBtDevice;
-		start();
-	}
 	
 }

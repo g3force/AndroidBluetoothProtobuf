@@ -1,11 +1,9 @@
 package edu.tigers.bluetoothprotobuf;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 
-import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
@@ -21,12 +19,12 @@ public class BluetoothPbLocal extends ABluetoothPb
 	// --------------------------------------------------------------------------
 	// --- variables and constants ----------------------------------------------
 	// --------------------------------------------------------------------------
-	private static final Logger	log				= Logger.getLogger(BluetoothPbLocal.class.getName());
+	private static final Logger							log					= Logger.getLogger(BluetoothPbLocal.class
+																									.getName());
 	
-	private AcceptThread				acceptThread	= null;
-	private StreamConnection		currentConnection;
-	private OutputStream				currentOutputStream;
-	private String						currentService;
+	private AcceptThread										acceptThread		= null;
+	
+	private final List<BluetoothPbDeviceConnection>	deviceConnections	= new LinkedList<BluetoothPbDeviceConnection>();
 	
 	
 	// --------------------------------------------------------------------------
@@ -46,6 +44,11 @@ public class BluetoothPbLocal extends ABluetoothPb
 	@Override
 	public void start()
 	{
+		if (isActive())
+		{
+			return;
+		}
+		super.start();
 		log.debug("Start btpb");
 		acceptThread = new AcceptThread();
 		new Thread(acceptThread, "Btpb_accept").start();
@@ -55,118 +58,128 @@ public class BluetoothPbLocal extends ABluetoothPb
 	@Override
 	public void stop()
 	{
+		super.stop();
 		log.debug("Stop btpb");
 		if (acceptThread != null)
 		{
 			acceptThread.cancel();
+			acceptThread = null;
 		}
-		if (currentConnection != null)
+		
+		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
 		{
-			try
-			{
-				currentConnection.close();
-			} catch (final IOException e)
-			{
-				log.error("Could not close current connection");
-			}
+			devCon.close();
 		}
-		currentService = null;
+		deviceConnections.clear();
 	}
 	
 	
-	private void onConnectionEstablished(final StreamConnection con)
+	private void onConnectionEstablished(final StreamConnection con, String deviceId)
 	{
 		log.debug("New connection");
-		if (currentConnection != null)
+		
+		if (deviceId == null)
 		{
-			try
+			deviceId = "Unknown-" + Long.toHexString(Double.doubleToLongBits(Math.random()));
+		}
+		
+		final BluetoothPbDeviceConnection devCon = new BluetoothPbDeviceConnection(con, deviceId);
+		deviceConnections.add(devCon);
+		
+		openInputConnection(devCon.getInputStream(), deviceId);
+		
+		notifyConnectionEstablished();
+	}
+	
+	
+	@Override
+	protected void onConnectionLost(final String id)
+	{
+		final List<BluetoothPbDeviceConnection> toBeRemoved = new LinkedList<BluetoothPbDeviceConnection>();
+		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
+		{
+			if ((id != null) && id.equals(devCon.getRemoteDeviceName()))
 			{
-				currentConnection.close();
-			} catch (final IOException e)
-			{
-				log.error("Could not close current connection");
+				toBeRemoved.add(devCon);
+				devCon.close();
 			}
 		}
-		currentConnection = con;
-		try
-		{
-			final InputStream in = currentConnection.openDataInputStream();
-			openInputConnection(in);
-		} catch (final IOException e)
-		{
-			log.error("Could not open input stream for connection");
-		}
-		notifyConnectionEstablished();
+		deviceConnections.removeAll(toBeRemoved);
 	}
 	
 	
 	@Override
 	public void sendMessage(final IMessageType msgType, final byte[] data)
 	{
-		log.trace("Sending message");
+		log.trace("Sending message to " + deviceConnections.size() + " open connections.");
 		
-		if (currentConnection == null)
+		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
 		{
-			currentService = findOpponentConnection();
-			if (currentService == null)
-			{
-				log.error("No current service available!");
-				return;
-			}
-			
-			try
-			{
-				currentConnection = BluetoothService.createStreamConnection(currentService);
-			} catch (final IOException e1)
-			{
-				log.error("Could not create stream connection for service " + currentService);
-				return;
-			}
-			
-			try
-			{
-				currentOutputStream = currentConnection.openOutputStream();
-			} catch (final IOException e)
-			{
-				log.error("Could not get output stream for service " + currentService);
-				return;
-			}
-			
-			try
-			{
-				final InputStream in = currentConnection.openInputStream();
-				openInputConnection(in);
-			} catch (final IOException e)
-			{
-				log.error("Could not get input stream for service " + currentService);
-			}
+			sendMessage(msgType, data, devCon);
 		}
-		
-		sendMessage(msgType, data, currentOutputStream);
 	}
 	
 	
-	private String findOpponentConnection()
+	public void sendMessage(final IMessageType msgType, final byte[] data, final BluetoothPbDeviceConnection devCon)
 	{
-		if (currentService != null)
+		sendMessage(msgType, data, devCon.getOutputStream());
+	}
+	
+	
+	/**
+	 * Establish a connection to the remote device.
+	 * Use {@link BluetoothService#retrieveKnownDevices()} or {@link BluetoothService#discoverDevices()} to get a list of
+	 * valid devices.
+	 * 
+	 * @param device
+	 */
+	public void connectToDevice(final RemoteDevice device)
+	{
+		String deviceName = null;
+		try
 		{
-			return currentService;
+			deviceName = device.getFriendlyName(false);
+			
+			for (final BluetoothPbDeviceConnection devCon : deviceConnections)
+			{
+				if (deviceName.equals(devCon.getRemoteDeviceName()))
+				{
+					log.debug("Device already connected.");
+					return;
+				}
+			}
+		} catch (final IOException e1)
+		{
+			log.error("Could not get device name for device.", e1);
 		}
 		
-		final List<RemoteDevice> devices = BluetoothService.discoverDevices();
+		log.debug("Connecting to device " + deviceName);
 		
+		final String service = BluetoothService.discoverService(APP_UUID_STR_VAR2, device);
+		try
+		{
+			final StreamConnection streamCon = BluetoothService.createStreamConnection(service);
+			onConnectionEstablished(streamCon, deviceName);
+		} catch (final IOException e)
+		{
+			log.error("Could not create stream connection for service: " + service + " on device " + deviceName);
+		}
+	}
+	
+	
+	public void connectToAllAvailableDevices()
+	{
+		List<RemoteDevice> devices = BluetoothService.retrieveKnownDevices();
 		if (devices.isEmpty())
 		{
-			log.error("No device found.");
-			return "";
-		} else if (devices.size() > 1)
-		{
-			log.warn("More than one device found!");
+			devices = BluetoothService.discoverDevices();
 		}
-		
-		final String service = BluetoothService.discoverService(APP_UUID_STR_VAR2, devices.get(0));
-		return service;
+		for (final RemoteDevice dev : devices)
+		{
+			connectToDevice(dev);
+		}
 	}
+	
 	
 	// --------------------------------------------------------------------------
 	// --- getter/setter --------------------------------------------------------
@@ -195,24 +208,24 @@ public class BluetoothPbLocal extends ABluetoothPb
 		@Override
 		public void run()
 		{
-			// retrieve the local Bluetooth device object
-			// LocalDevice local = null;
-			
-			// setup the server to listen for connection
+			// device discovery needs root privileges...
+			// try
+			// {
+			// if (!(LocalDevice.getLocalDevice().getDiscoverable() == 1))
+			// {
+			// LocalDevice.getLocalDevice().setDiscoverable(DiscoveryAgent.GIAC);
+			// }
+			// } catch (final BluetoothStateException err)
+			// {
+			// log.error("Error creating bluetooth connection", err);
+			// log.error("Try to enable device discovery via OS first or start application as root :/");
+			// log.error("For Linux you need extra packages. For ubuntu: apt-get install bluez libbluetooth-dev");
+			// }
 			try
 			{
-				// local = LocalDevice.getLocalDevice();
-				// local.setDiscoverable(DiscoveryAgent.GIAC);
-				
-				final UUID uuid = new UUID("fa87c0d0afac11de8a390800200c9a66", false);
-				final String url = "btspp://localhost:" + uuid.toString() + ";name=RemoteBluetooth";
+				final UUID uuid = new UUID(APP_UUID_STR_VAR2, false);
+				final String url = "btspp://localhost:" + uuid.toString() + ";name=" + APP_NAME;
 				notifier = (StreamConnectionNotifier) Connector.open(url);
-			} catch (final BluetoothStateException err)
-			{
-				log.error("Error creating bluetooth connection", err);
-				log.error("Try to enable device discovery via OS first or start Sumatra as root :/");
-				log.error("For Linux you need extra packages. For ubuntu: apt-get install bluez libbluetooth-dev");
-				return;
 			} catch (final IOException err)
 			{
 				log.error("Error creating bluetooth connection", err);
@@ -240,7 +253,8 @@ public class BluetoothPbLocal extends ABluetoothPb
 					connection = notifier.acceptAndOpen();
 					log.info("Bluetooth device connected.");
 					
-					onConnectionEstablished(connection);
+					// do not know how to determine device...
+					onConnectionEstablished(connection, null);
 				} catch (final IOException e)
 				{
 					log.error("Error acceptAndOpen()", e);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="devices_array">
-        <item>No Device</item>
+        <item>No Devices</item>
     </string-array>
 </resources>

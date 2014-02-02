@@ -47,6 +47,11 @@ public class BtpbTestClient
 			{
 				break;
 			}
+			if (s.equals("c"))
+			{
+				btpb.connectToAllAvailableDevices();
+				continue;
+			}
 			final SimpleMessage.Builder builder = (SimpleMessage.Builder) EMessage.SIMPLE_MESSAGE.getProtoMsg()
 					.newBuilderForType();
 			builder.setMessage(s);
