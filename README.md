@@ -27,10 +27,15 @@ There are three jars:
  * btpb_android.jar: Only Android specific libs
  * btpb_java.jar: Only Java specific libs
 
-Also, you need to specify you Messages. This is simply a custom Enum with all your protobuf messages. An example can
-be found in _BluetoothProtobufMessages_.
+Also, you need to define your Messages. This can simply be done with a custom Enum with all your protobuf messages. An example can be found in *BluetoothProtobufMessages*. It is a good idea to have the Enum and the Protobuf files in an own project and package it into a jar file, because it is needed by both sides and should be identical.
 
 Additionally you need to add the jars mentioned under Requirements to your build path. You can find them under 
 BluetoothProtobufCore/lib/
 
-See the small sample applications under BluetoothProtobufClient and BluetoothProtobufApp for how to use the library.
+See the small sample applications under *BluetoothProtobufClient* and *BluetoothProtobufApp* for how to use the library.
+
+Compile
+=======
+The Source is organized in Eclipse projects. It is not possible to put everything into one jar file, because the Android Java compiler complains about native libs from bluecove. Also, I wanted to separate the lib from the examples.
+There are some project dependencies, so you should import all projects.
+The library can be build with the jardesc files in the Core project.
