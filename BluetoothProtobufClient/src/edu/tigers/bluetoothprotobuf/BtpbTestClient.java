@@ -78,6 +78,13 @@ public class BtpbTestClient
 			log.info("Connection established");
 		}
 		
+		
+		@Override
+		public void onConnectionLost()
+		{
+			log.info("Connection lost");
+		}
+		
 	}
 	// --------------------------------------------------------------------------
 	// --- getter/setter --------------------------------------------------------

@@ -10,7 +10,7 @@
             <packagesToUnSeal/>
         </sealing>
     </manifest>
-    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+    <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
         <javaElement handleIdentifier="=BluetoothProtobufLibAndroid/src"/>
     </selectedElements>
 </jardesc>

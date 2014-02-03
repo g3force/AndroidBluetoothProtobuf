@@ -9,4 +9,7 @@ public interface IMessageObserver
 	
 	
 	void onConnectionEstablished();
+	
+	
+	void onConnectionLost();
 }

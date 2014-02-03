@@ -12,7 +12,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.UninitializedMessageException;
 
 
-public abstract class ABluetoothPb
+public abstract class ABluetoothPb implements IStartStopConnection, IMessageGateway
 {
 	// --------------------------------------------------------------------------
 	// --- variables and constants ----------------------------------------------
@@ -88,12 +88,26 @@ public abstract class ABluetoothPb
 	}
 	
 	
+	protected void notifyConnectionLost()
+	{
+		synchronized (observers)
+		{
+			for (final IMessageObserver observer : observers)
+			{
+				observer.onConnectionLost();
+			}
+		}
+	}
+	
+	
+	@Override
 	public void start()
 	{
 		active = true;
 	}
 	
 	
+	@Override
 	public void stop()
 	{
 		
@@ -117,6 +131,7 @@ public abstract class ABluetoothPb
 	}
 	
 	
+	@Override
 	public abstract void sendMessage(final IMessageType msgType, final byte[] data);
 	
 	

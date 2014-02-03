@@ -186,6 +186,13 @@ public class BluetoothPbLocal extends ABluetoothPb
 	}
 	
 	
+	@Override
+	public boolean isConnected()
+	{
+		return !deviceConnections.isEmpty();
+	}
+	
+	
 	// --------------------------------------------------------------------------
 	// --- getter/setter --------------------------------------------------------
 	// --------------------------------------------------------------------------

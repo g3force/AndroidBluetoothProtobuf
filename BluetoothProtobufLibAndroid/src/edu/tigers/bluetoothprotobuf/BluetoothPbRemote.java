@@ -137,8 +137,15 @@ public class BluetoothPbRemote extends ABluetoothPb
 			onConnectionEstablished(socket);
 		} catch (final IOException e)
 		{
-			log.error("Could not connect to " + currentBtDevice.getName(), e);
+			log.error("Could not connect to " + currentBtDevice.getName());
 		}
+	}
+	
+	
+	@Override
+	public boolean isConnected()
+	{
+		return !deviceConnections.isEmpty();
 	}
 	
 	

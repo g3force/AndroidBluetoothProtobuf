@@ -228,5 +228,24 @@ public class MainActivity extends Activity
 				}
 			});
 		}
+		
+		
+		@Override
+		public void onConnectionLost()
+		{
+			mHandler.post(new Runnable()
+			{
+				
+				@Override
+				public void run()
+				{
+					final TextView txtView = (TextView) findViewById(R.id.textView1);
+					txtView.append("Connection lost\n");
+					
+					final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView1);
+					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+				}
+			});
+		}
 	}
 }
