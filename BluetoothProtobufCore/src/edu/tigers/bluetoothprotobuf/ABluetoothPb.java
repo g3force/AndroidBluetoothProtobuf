@@ -3,6 +3,7 @@ package edu.tigers.bluetoothprotobuf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -17,18 +18,20 @@ public abstract class ABluetoothPb implements IStartStopConnection, IMessageGate
 	// --------------------------------------------------------------------------
 	// --- variables and constants ----------------------------------------------
 	// --------------------------------------------------------------------------
-	private static final Logger				log					= Logger.getLogger(ABluetoothPb.class.getName());
+	private static final Logger				log						= Logger.getLogger(ABluetoothPb.class.getName());
 	
 	/** Name for the SDP record when creating server socket */
-	protected static final String				APP_NAME				= "BluetoothBtService";
+	protected static final String				APP_NAME					= "BluetoothBtService";
 	
 	/** Unique UUID for this application */
-	protected static final String				APP_UUID_STR_VAR1	= "04c6093b-0000-1000-8000-00805f9b34fb";
-	protected static final String				APP_UUID_STR_VAR2	= "04c6093b00001000800000805f9b34fb";
+	protected static final String				APP_UUID_STR_VAR1		= "04c6093b-0000-1000-8000-00805f9b34fb";
+	protected static final String				APP_UUID_STR_VAR2		= "04c6093b00001000800000805f9b34fb";
 	
-	private final List<IMessageObserver>	observers			= new CopyOnWriteArrayList<IMessageObserver>();
+	private static final int					LENGTH_HEADER_SIZE	= 4;
+	
+	private final List<IMessageObserver>	observers				= new CopyOnWriteArrayList<IMessageObserver>();
 	private final MessageContainer			msgContainer;
-	private boolean								active				= false;
+	private boolean								active					= false;
 	
 	
 	// --------------------------------------------------------------------------
@@ -119,10 +122,11 @@ public abstract class ABluetoothPb implements IStartStopConnection, IMessageGate
 	{
 		try
 		{
-			final byte[] message = new byte[data.length + 2];
-			System.arraycopy(data, 0, message, 2, data.length);
+			final byte[] message = new byte[data.length + 1 + LENGTH_HEADER_SIZE];
+			System.arraycopy(data, 0, message, 1 + LENGTH_HEADER_SIZE, data.length);
 			message[0] = Byte.valueOf(String.valueOf(msgType.getId()));
-			message[1] = Byte.valueOf(String.valueOf(data.length));
+			final byte[] bytes = ByteBuffer.allocate(LENGTH_HEADER_SIZE).putInt(data.length).array();
+			System.arraycopy(bytes, 0, message, 1, bytes.length);
 			out.write(message);
 		} catch (final IOException err)
 		{
@@ -189,8 +193,8 @@ public abstract class ABluetoothPb implements IStartStopConnection, IMessageGate
 		@Override
 		public void run()
 		{
-			final byte[] buffer = new byte[1024];
-			int bytes;
+			final byte[] headerBuffer = new byte[1 + LENGTH_HEADER_SIZE];
+			
 			
 			log.debug("Start InputConnectionThread");
 			
@@ -199,13 +203,24 @@ public abstract class ABluetoothPb implements IStartStopConnection, IMessageGate
 				try
 				{
 					// Read from the InputStream
-					bytes = in.read(buffer);
+					final int headerBytes = in.read(headerBuffer);
 					
-					if (bytes > 1)
+					if (headerBytes <= 1)
 					{
-						final byte id = buffer[0];
-						final int length = buffer[1] & 0xFF;
+						
+						log.info("No data available. Closing stream.");
+						active = false;
+					} else if (headerBytes == (1 + LENGTH_HEADER_SIZE))
+					{
+						final byte id = headerBuffer[0];
+						final ByteBuffer byteBuffer = ByteBuffer.allocate(LENGTH_HEADER_SIZE).put(headerBuffer, 1,
+								LENGTH_HEADER_SIZE);
+						byteBuffer.position(0);
+						final int length = byteBuffer.getInt();
 						final IMessageType mt = getMsgContainer().getMessageTypeFromId(id);
+						
+						final byte[] buffer = new byte[length];
+						final int bytes = in.read(buffer);
 						
 						if (mt == null)
 						{
@@ -213,30 +228,29 @@ public abstract class ABluetoothPb implements IStartStopConnection, IMessageGate
 							continue;
 						}
 						
-						if ((bytes - 2) != length)
+						if ((bytes) != length)
 						{
-							log.error("Invalid message length: " + (bytes - 1) + " should be: " + length);
+							log.error("Invalid message length: " + (bytes) + " should be: " + length);
 							continue;
 						}
-						final byte[] messageData = new byte[length];
-						System.arraycopy(buffer, 2, messageData, 0, length);
-						final Message msg = mt.getProtoMsg().newBuilderForType().mergeFrom(messageData).build();
+						final Message msg = mt.getProtoMsg().newBuilderForType().mergeFrom(buffer).build();
 						notifyNewMessageArrived(mt, msg);
 					} else
 					{
-						log.info("No data available. Closing stream.");
-						active = false;
+						log.error("wrong number of header bytes: " + headerBytes);
+						final byte[] buffer = new byte[1024];
+						in.read(buffer);
 					}
 				} catch (final IOException e)
 				{
 					log.info("disconnected from input connection");
 					active = false;
+					onConnectionLost(id);
 				} catch (final UninitializedMessageException e)
 				{
 					log.error("Message is uninitialzed?!", e);
 				}
 			}
-			onConnectionLost(id);
 		}
 	}
 }

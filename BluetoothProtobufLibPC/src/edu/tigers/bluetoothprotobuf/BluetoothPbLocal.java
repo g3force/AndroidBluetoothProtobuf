@@ -244,10 +244,7 @@ public class BluetoothPbLocal extends ABluetoothPb
 				return;
 			}
 			
-			while (true)
-			{
-				waitForConnection();
-			}
+			waitForConnection();
 		}
 		
 		
@@ -269,7 +266,7 @@ public class BluetoothPbLocal extends ABluetoothPb
 					onConnectionEstablished(connection, null);
 				} catch (final IOException e)
 				{
-					log.error("Error acceptAndOpen()", e);
+					log.debug("AcceptThread canceled");
 					return;
 				}
 			}

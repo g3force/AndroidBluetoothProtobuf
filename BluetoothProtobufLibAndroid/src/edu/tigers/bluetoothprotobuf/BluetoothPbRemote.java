@@ -96,6 +96,7 @@ public class BluetoothPbRemote extends ABluetoothPb
 	@Override
 	protected void onConnectionLost(final String id)
 	{
+		log.debug("Connection lost to " + id);
 		final List<BluetoothPbDeviceConnection> toBeRemoved = new LinkedList<BluetoothPbDeviceConnection>();
 		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
 		{
@@ -106,6 +107,12 @@ public class BluetoothPbRemote extends ABluetoothPb
 			}
 		}
 		deviceConnections.removeAll(toBeRemoved);
+		log.debug("Remaining connections: " + deviceConnections.size());
+		if (deviceConnections.isEmpty())
+		{
+			log.debug("All connections lost");
+			notifyConnectionLost();
+		}
 	}
 	
 	
@@ -193,7 +200,7 @@ public class BluetoothPbRemote extends ABluetoothPb
 					onConnectionEstablished(socket);
 				} catch (final IOException e)
 				{
-					log.error("Canceled accept()");
+					log.info("Canceled accept()");
 				}
 			}
 			log.debug("END mAcceptThread");
