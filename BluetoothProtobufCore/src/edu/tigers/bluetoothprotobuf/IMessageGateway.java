@@ -18,4 +18,16 @@ public interface IMessageGateway
 	 * @return
 	 */
 	boolean isConnected();
+	
+	
+	/**
+	 * Start this gateway
+	 */
+	void start();
+	
+	
+	/**
+	 * Stop this gateway
+	 */
+	void stop();
 }

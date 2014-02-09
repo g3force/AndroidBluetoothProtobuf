@@ -13,7 +13,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.UninitializedMessageException;
 
 
-public abstract class ABluetoothPb implements IStartStopConnection, IMessageGateway
+public abstract class ABluetoothPb implements IMessageGateway
 {
 	// --------------------------------------------------------------------------
 	// --- variables and constants ----------------------------------------------
@@ -219,16 +219,28 @@ public abstract class ABluetoothPb implements IStartStopConnection, IMessageGate
 						final int length = byteBuffer.getInt();
 						final IMessageType mt = getMsgContainer().getMessageTypeFromId(id);
 						
-						final byte[] buffer = new byte[length];
-						final int bytes = in.read(buffer);
+						if (length > 8e6)
+						{
+							log.warn("Dropped message (id=" + id + ") with invalid length: " + length);
+							clearBuffer(in);
+							continue;
+						}
 						
 						if (mt == null)
 						{
 							log.error("Unknown message id: " + id);
+							clearBuffer(in);
 							continue;
 						}
 						
-						if ((bytes) != length)
+						final byte[] buffer = new byte[length];
+						int bytes = 0;
+						while (bytes < length)
+						{
+							bytes += in.read(buffer, bytes, length - bytes);
+						}
+						
+						if (bytes != length)
 						{
 							log.error("Invalid message length: " + (bytes) + " should be: " + length);
 							continue;
@@ -238,18 +250,30 @@ public abstract class ABluetoothPb implements IStartStopConnection, IMessageGate
 					} else
 					{
 						log.error("wrong number of header bytes: " + headerBytes);
-						final byte[] buffer = new byte[1024];
-						in.read(buffer);
+						clearBuffer(in);
 					}
 				} catch (final IOException e)
 				{
 					log.info("disconnected from input connection");
 					active = false;
-					onConnectionLost(id);
 				} catch (final UninitializedMessageException e)
 				{
 					log.error("Message is uninitialzed?!", e);
+					clearBuffer(in);
 				}
+			}
+			onConnectionLost(id);
+		}
+		
+		
+		private void clearBuffer(final InputStream in)
+		{
+			try
+			{
+				in.skip(1024);
+			} catch (final IOException e)
+			{
+				log.error("Error while skipping data.", e);
 			}
 		}
 	}
