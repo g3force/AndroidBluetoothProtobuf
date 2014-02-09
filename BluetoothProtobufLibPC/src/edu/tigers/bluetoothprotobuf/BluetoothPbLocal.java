@@ -111,11 +111,14 @@ public class BluetoothPbLocal extends ABluetoothPb
 	@Override
 	public void sendMessage(final IMessageType msgType, final byte[] data)
 	{
-		log.trace("Sending message to " + deviceConnections.size() + " open connections.");
-		
-		for (final BluetoothPbDeviceConnection devCon : deviceConnections)
+		if (!deviceConnections.isEmpty())
 		{
-			sendMessage(msgType, data, devCon);
+			log.trace("Sending message to " + deviceConnections.size() + " open connections.");
+			
+			for (final BluetoothPbDeviceConnection devCon : deviceConnections)
+			{
+				sendMessage(msgType, data, devCon);
+			}
 		}
 	}
 	
