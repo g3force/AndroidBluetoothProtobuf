@@ -241,7 +241,7 @@ public class BluetoothPbLocal extends ABluetoothPb
 				final UUID uuid = new UUID(APP_UUID_STR_VAR2, false);
 				final String url = "btspp://localhost:" + uuid.toString() + ";name=" + APP_NAME;
 				notifier = (StreamConnectionNotifier) Connector.open(url);
-			} catch (final IOException err)
+			} catch (final Throwable err)
 			{
 				log.error("Error creating bluetooth connection", err);
 				return;
@@ -279,14 +279,14 @@ public class BluetoothPbLocal extends ABluetoothPb
 		public void cancel()
 		{
 			active = false;
-			try
+			if(notifier != null)
 			{
-				notifier.close();
-			} catch (final IOException e)
-			{
-				log.error("Could not close notifier");
+				try {
+					notifier.close();
+				} catch (final IOException e) {
+					log.error("Could not close notifier");
+				}
 			}
-			
 		}
 	}
 }

@@ -130,7 +130,7 @@ public abstract class ABluetoothPb implements IMessageGateway
 			out.write(message);
 		} catch (final IOException err)
 		{
-			log.error("Error opening output stream for sending message " + msgType.name(), err);
+			log.debug("Output stream closed. Can not send message " + msgType.name());
 		}
 	}
 	
