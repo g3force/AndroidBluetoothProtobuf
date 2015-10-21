@@ -1,46 +1,44 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
-    <artifactId>bluetoothprotobuf</artifactId>
-    <version>v1.0</version>
-  </parent>
-  <packaging>jar</packaging>
-  <artifactId>messages</artifactId>
-  <name>BluetoothProtobufMessages</name>
-  
-  <dependencies>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-    </dependency>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
+	<version>v1.0</version>
+	<packaging>jar</packaging>
+	<artifactId>messages</artifactId>
+	<name>BluetoothProtobufMessages</name>
 
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>2.6.1</version>
-    </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
 
-    <dependency>
-      <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
-      <artifactId>core</artifactId>
-      <version>v1.0</version>
-    </dependency>
-  </dependencies>
-  
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-    <generatedSourcesDirectory>src-gen</generatedSourcesDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.3</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>2.6.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
+			<artifactId>core</artifactId>
+			<version>v1.1</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<generatedSourcesDirectory>src-gen</generatedSourcesDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

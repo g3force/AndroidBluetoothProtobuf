@@ -3,24 +3,20 @@
   <parent>
     <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
     <artifactId>bluetoothprotobuf</artifactId>
-    <version>v1.0</version>
+    <version>v1.1</version>
   </parent>
   <packaging>jar</packaging>
   <artifactId>libandroid</artifactId>
   <name>BluetoothProtobufLibAndroid</name>
 
   <dependencies>
+  
     <dependency>
       <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
       <artifactId>core</artifactId>
-      <version>v1.0</version>
+      <version>v1.1</version>
     </dependency>
     
-    <dependency>
-      <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
-      <artifactId>messages</artifactId>
-      <version>v1.0</version>
-    </dependency>
   </dependencies>
   
   <build>

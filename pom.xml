@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
   <artifactId>bluetoothprotobuf</artifactId>
-  <version>v1.0</version>
+  <version>v1.1</version>
   <name>Bluetoothprotobuf</name>
   <packaging>pom</packaging>
 
@@ -10,6 +10,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
+  <modules>
+    <module>core</module>
+    <module>libpc</module>
+    <module>libandroid</module>
+  </modules>
 
   <distributionManagement>
     <repository>
