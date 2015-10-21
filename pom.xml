@@ -13,7 +13,7 @@
   <modules>
     <module>core</module>
     <module>libpc</module>
-    <module>libandroid</module>
+<!--     <module>libandroid</module> -->
   </modules>
 
   <distributionManagement>
