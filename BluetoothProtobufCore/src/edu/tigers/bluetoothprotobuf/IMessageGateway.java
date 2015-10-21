@@ -1,6 +1,9 @@
 package edu.tigers.bluetoothprotobuf;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public interface IMessageGateway
 {
 	/**

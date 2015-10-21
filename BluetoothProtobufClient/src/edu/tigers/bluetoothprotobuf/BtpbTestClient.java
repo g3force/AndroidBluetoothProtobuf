@@ -10,24 +10,18 @@ import com.google.protobuf.Message;
 import edu.tigers.bluetoothprotobuf.SimpleMessageProtos.SimpleMessage;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public class BtpbTestClient
 {
-	// --------------------------------------------------------------------------
-	// --- variables and constants ----------------------------------------------
-	// --------------------------------------------------------------------------
-	
 	private static final Logger	log	= Logger.getLogger(BtpbTestClient.class.getName());
 	
 	
-	// --------------------------------------------------------------------------
-	// --- constructors ---------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
-	
-	// --------------------------------------------------------------------------
-	// --- methods --------------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param args
+	 */
 	public static void main(final String[] args)
 	{
 		System.setProperty("log4j.configuration", "log4j.properties");

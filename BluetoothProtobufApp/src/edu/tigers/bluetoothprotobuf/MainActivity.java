@@ -27,6 +27,9 @@ import com.google.protobuf.Message;
 import edu.tigers.bluetoothprotobuf.SimpleMessageProtos.SimpleMessage;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public class MainActivity extends Activity
 {
 	
@@ -106,7 +109,7 @@ public class MainActivity extends Activity
 			} else
 			{
 				Toast.makeText(getApplicationContext(), "BT not enabled", Toast.LENGTH_LONG).show();
-				this.finish();
+				finish();
 			}
 		}
 	}
@@ -205,7 +208,7 @@ public class MainActivity extends Activity
 					txtView.append(msg.getMessage() + "\n");
 					
 					final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView1);
-					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+					scrollView.fullScroll(View.FOCUS_DOWN);
 				}
 			});
 		}
@@ -224,7 +227,7 @@ public class MainActivity extends Activity
 					txtView.append("Connection established\n");
 					
 					final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView1);
-					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+					scrollView.fullScroll(View.FOCUS_DOWN);
 				}
 			});
 		}
@@ -243,7 +246,7 @@ public class MainActivity extends Activity
 					txtView.append("Connection lost\n");
 					
 					final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView1);
-					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+					scrollView.fullScroll(View.FOCUS_DOWN);
 				}
 			});
 		}

@@ -10,6 +10,9 @@ import de.mindpipe.android.logging.log4j.LogConfigurator;
  */
 public class ConfigureLog4J
 {
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 */
 	public static void configure()
 	{
 		final LogConfigurator logConfigurator = new LogConfigurator();

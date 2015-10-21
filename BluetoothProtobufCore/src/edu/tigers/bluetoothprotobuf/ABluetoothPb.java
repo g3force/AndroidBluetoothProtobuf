@@ -13,6 +13,9 @@ import com.google.protobuf.Message;
 import com.google.protobuf.UninitializedMessageException;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public abstract class ABluetoothPb implements IMessageGateway
 {
 	// --------------------------------------------------------------------------
@@ -38,6 +41,10 @@ public abstract class ABluetoothPb implements IMessageGateway
 	// --- constructors ---------------------------------------------------------
 	// --------------------------------------------------------------------------
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param msgContainer
+	 */
 	public ABluetoothPb(final MessageContainer msgContainer)
 	{
 		this.msgContainer = msgContainer;
@@ -49,6 +56,10 @@ public abstract class ABluetoothPb implements IMessageGateway
 	// --------------------------------------------------------------------------
 	
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param observer
+	 */
 	public void addObserver(final IMessageObserver observer)
 	{
 		synchronized (observers)
@@ -58,6 +69,10 @@ public abstract class ABluetoothPb implements IMessageGateway
 	}
 	
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param observer
+	 */
 	public void removeObserver(final IMessageObserver observer)
 	{
 		synchronized (observers)
@@ -180,9 +195,6 @@ public abstract class ABluetoothPb implements IMessageGateway
 		private final String			id;
 		
 		
-		/**
-		 * @param socket
-		 */
 		private InputConnectionThread(final InputStream in, final String id)
 		{
 			this.in = in;

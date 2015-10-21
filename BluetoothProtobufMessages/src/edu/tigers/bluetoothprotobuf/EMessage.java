@@ -5,6 +5,9 @@ import com.google.protobuf.Message;
 import edu.tigers.bluetoothprotobuf.SimpleMessageProtos.SimpleMessage;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public enum EMessage implements IMessageType
 {
 	/**  */

@@ -13,12 +13,11 @@ import javax.microedition.io.StreamConnectionNotifier;
 import org.apache.log4j.Logger;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public class BluetoothPbLocal extends ABluetoothPb
 {
-	
-	// --------------------------------------------------------------------------
-	// --- variables and constants ----------------------------------------------
-	// --------------------------------------------------------------------------
 	private static final Logger							log					= Logger.getLogger(BluetoothPbLocal.class
 																									.getName());
 	
@@ -27,19 +26,15 @@ public class BluetoothPbLocal extends ABluetoothPb
 	private final List<BluetoothPbDeviceConnection>	deviceConnections	= new LinkedList<BluetoothPbDeviceConnection>();
 	
 	
-	// --------------------------------------------------------------------------
-	// --- constructors ---------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param msgContainer
+	 */
 	public BluetoothPbLocal(final MessageContainer msgContainer)
 	{
 		super(msgContainer);
 	}
 	
-	
-	// --------------------------------------------------------------------------
-	// --- methods --------------------------------------------------------------
-	// --------------------------------------------------------------------------
 	
 	@Override
 	public void start()
@@ -123,6 +118,12 @@ public class BluetoothPbLocal extends ABluetoothPb
 	}
 	
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param msgType
+	 * @param data
+	 * @param devCon
+	 */
 	public void sendMessage(final IMessageType msgType, final byte[] data, final BluetoothPbDeviceConnection devCon)
 	{
 		sendMessage(msgType, data, devCon.getOutputStream());
@@ -175,6 +176,9 @@ public class BluetoothPbLocal extends ABluetoothPb
 	}
 	
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 */
 	public void connectToAllAvailableDevices()
 	{
 		List<RemoteDevice> devices = BluetoothService.retrieveKnownDevices();
@@ -204,7 +208,6 @@ public class BluetoothPbLocal extends ABluetoothPb
 	 * Wait for new bluetooth connections
 	 * 
 	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
-	 * 
 	 */
 	private class AcceptThread implements Runnable
 	{
@@ -213,7 +216,6 @@ public class BluetoothPbLocal extends ABluetoothPb
 		
 		
 		/**
-		 * @param consumer
 		 */
 		public AcceptThread()
 		{
@@ -279,11 +281,13 @@ public class BluetoothPbLocal extends ABluetoothPb
 		public void cancel()
 		{
 			active = false;
-			if(notifier != null)
+			if (notifier != null)
 			{
-				try {
+				try
+				{
 					notifier.close();
-				} catch (final IOException e) {
+				} catch (final IOException e)
+				{
 					log.error("Could not close notifier");
 				}
 			}

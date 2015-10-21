@@ -21,11 +21,18 @@ import javax.microedition.io.StreamConnection;
 import org.apache.log4j.Logger;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public class BluetoothService
 {
 	private static final Logger	log	= Logger.getLogger(BluetoothService.class.getName());
 	
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @return
+	 */
 	public static List<RemoteDevice> discoverDevices()
 	{
 		final Object inquiryCompletedEvent = new Object();
@@ -102,7 +109,7 @@ public class BluetoothService
 	 * Discover specified service on device and return connection url
 	 * 
 	 * @param strServiceUUID (without -)
-	 * @param device
+	 * @param btDevice
 	 * @return
 	 */
 	public static String discoverService(final String strServiceUUID, final RemoteDevice btDevice)
@@ -129,15 +136,15 @@ public class BluetoothService
 			@Override
 			public void servicesDiscovered(final int transID, final ServiceRecord[] servRecord)
 			{
-				for (int i = 0; i < servRecord.length; i++)
+				for (ServiceRecord element : servRecord)
 				{
-					final String url = servRecord[i].getConnectionURL(ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
+					final String url = element.getConnectionURL(ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
 					if (url == null)
 					{
 						continue;
 					}
 					discoveredServices.add(url);
-					final DataElement serviceName = servRecord[i].getAttributeValue(0x0100);
+					final DataElement serviceName = element.getAttributeValue(0x0100);
 					if (serviceName != null)
 					{
 						log.info("service " + serviceName.getValue() + " found " + url);
@@ -199,6 +206,8 @@ public class BluetoothService
 	
 	/**
 	 * @param serviceURL
+	 * @return
+	 * @throws IOException
 	 */
 	public static StreamConnection createStreamConnection(final String serviceURL) throws IOException
 	{

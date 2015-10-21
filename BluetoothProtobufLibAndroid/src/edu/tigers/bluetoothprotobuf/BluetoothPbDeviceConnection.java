@@ -9,12 +9,11 @@ import org.apache.log4j.Logger;
 import android.bluetooth.BluetoothSocket;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public class BluetoothPbDeviceConnection
 {
-	// --------------------------------------------------------------------------
-	// --- variables and constants ----------------------------------------------
-	// --------------------------------------------------------------------------
-	
 	private static final Logger	log	= Logger.getLogger(BluetoothPbDeviceConnection.class.getName());
 	private final BluetoothSocket	socket;
 	private final OutputStream		outputStream;
@@ -22,12 +21,7 @@ public class BluetoothPbDeviceConnection
 	private final String				remoteDeviceId;
 	
 	
-	// --------------------------------------------------------------------------
-	// --- constructors ---------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
 	/**
-	 * 
 	 * @param socket
 	 * @param remoteDeviceId
 	 */
@@ -89,6 +83,9 @@ public class BluetoothPbDeviceConnection
 	}
 	
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 */
 	public void close()
 	{
 		log.debug("Closing all streams and sockets.");

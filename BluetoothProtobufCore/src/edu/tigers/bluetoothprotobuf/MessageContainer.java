@@ -5,20 +5,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public class MessageContainer
 {
-	// --------------------------------------------------------------------------
-	// --- variables and constants ----------------------------------------------
-	// --------------------------------------------------------------------------
-	
-	
 	private final Map<Integer, IMessageType>	messages	= new HashMap<Integer, IMessageType>();
 	
 	
-	// --------------------------------------------------------------------------
-	// --- constructors ---------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param msgs
+	 */
 	public MessageContainer(final Collection<IMessageType> msgs)
 	{
 		for (final IMessageType msg : msgs)
@@ -28,6 +26,10 @@ public class MessageContainer
 	}
 	
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param msgs
+	 */
 	public MessageContainer(final IMessageType[] msgs)
 	{
 		for (final IMessageType msg : msgs)
@@ -37,10 +39,6 @@ public class MessageContainer
 	}
 	
 	
-	// --------------------------------------------------------------------------
-	// --- methods --------------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
 	/**
 	 * @param id
 	 * @return
@@ -49,8 +47,4 @@ public class MessageContainer
 	{
 		return messages.get(id);
 	}
-	
-	// --------------------------------------------------------------------------
-	// --- getter/setter --------------------------------------------------------
-	// --------------------------------------------------------------------------
 }

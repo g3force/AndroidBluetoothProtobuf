@@ -13,12 +13,11 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public class BluetoothPbRemote extends ABluetoothPb
 {
-	// --------------------------------------------------------------------------
-	// --- variables and constants ----------------------------------------------
-	// --------------------------------------------------------------------------
-	
 	private static final Logger							log					= Logger.getLogger(BluetoothPbRemote.class
 																									.getName());
 	
@@ -36,10 +35,11 @@ public class BluetoothPbRemote extends ABluetoothPb
 	}
 	
 	
-	// --------------------------------------------------------------------------
-	// --- constructors ---------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param msgContainer
+	 * @param device
+	 */
 	public BluetoothPbRemote(final MessageContainer msgContainer, final BluetoothDevice device)
 	{
 		super(msgContainer);
@@ -47,10 +47,6 @@ public class BluetoothPbRemote extends ABluetoothPb
 		currentBtDevice = device;
 	}
 	
-	
-	// --------------------------------------------------------------------------
-	// --- methods --------------------------------------------------------------
-	// --------------------------------------------------------------------------
 	
 	@Override
 	public void start()
@@ -87,7 +83,7 @@ public class BluetoothPbRemote extends ABluetoothPb
 	{
 		final BluetoothPbDeviceConnection devCon = new BluetoothPbDeviceConnection(socket, currentBtDevice.getAddress());
 		deviceConnections.add(devCon);
-		this.openInputConnection(devCon.getInputStream(), currentBtDevice.getAddress());
+		openInputConnection(devCon.getInputStream(), currentBtDevice.getAddress());
 		log.debug("Connection established");
 		notifyConnectionEstablished();
 	}
@@ -226,10 +222,4 @@ public class BluetoothPbRemote extends ABluetoothPb
 			}
 		}
 	}
-	
-	
-	// --------------------------------------------------------------------------
-	// --- getter/setter --------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
 }

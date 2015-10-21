@@ -9,12 +9,11 @@ import javax.microedition.io.StreamConnection;
 import org.apache.log4j.Logger;
 
 
+/**
+ * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+ */
 public class BluetoothPbDeviceConnection
 {
-	// --------------------------------------------------------------------------
-	// --- variables and constants ----------------------------------------------
-	// --------------------------------------------------------------------------
-	
 	private static final Logger		log	= Logger.getLogger(BluetoothPbDeviceConnection.class.getName());
 	private final StreamConnection	streamConnection;
 	private final OutputStream			outputStream;
@@ -22,11 +21,11 @@ public class BluetoothPbDeviceConnection
 	private final String					remoteDeviceId;
 	
 	
-	// --------------------------------------------------------------------------
-	// --- constructors ---------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
-	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 * @param stream
+	 * @param remoteDeviceId
+	 */
 	public BluetoothPbDeviceConnection(final StreamConnection stream, final String remoteDeviceId)
 	{
 		streamConnection = stream;
@@ -57,16 +56,6 @@ public class BluetoothPbDeviceConnection
 	}
 	
 	
-	// --------------------------------------------------------------------------
-	// --- methods --------------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
-	
-	// --------------------------------------------------------------------------
-	// --- getter/setter --------------------------------------------------------
-	// --------------------------------------------------------------------------
-	
-	
 	/**
 	 * @return the streamConnection
 	 */
@@ -94,6 +83,9 @@ public class BluetoothPbDeviceConnection
 	}
 	
 	
+	/**
+	 * @author Nicolai Ommer <nicolai.ommer@gmail.com>
+	 */
 	public void close()
 	{
 		try
