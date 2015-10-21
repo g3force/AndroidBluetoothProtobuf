@@ -15,17 +15,4 @@
     <module>libpc</module>
 <!--     <module>libandroid</module> -->
   </modules>
-
-  <distributionManagement>
-    <repository>
-      <id>tigers</id>
-      <name>Internal Releases</name>
-      <url>https://tigers-mannheim.de/nexus/content/repositories/tigers</url>
-    </repository>
-    <snapshotRepository>
-      <id>snapshot_tigers</id>
-      <name>Internal Releases</name>
-      <url>https://tigers-mannheim.de/nexus/content/repositories/snapshot_tigers</url>
-    </snapshotRepository>
-  </distributionManagement>
 </project>
