@@ -4,7 +4,7 @@
 	<parent>
     <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
     <artifactId>bluetoothprotobuf</artifactId>
-    <version>v1.1</version>
+    <version>v1.3</version>
   </parent>
   <packaging>jar</packaging>
 	<artifactId>core</artifactId>
