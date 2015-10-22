@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
     <artifactId>bluetoothprotobuf</artifactId>
-    <version>v1.3</version>
+    <version>v1.4</version>
   </parent>
   <packaging>jar</packaging>
   <artifactId>libandroid</artifactId>
@@ -14,7 +14,7 @@
     <dependency>
       <groupId>com.github.g3force.AndroidBluetoothProtobuf</groupId>
       <artifactId>core</artifactId>
-      <version>v1.1</version>
+      <version>v1.4</version>
     </dependency>
     
   </dependencies>
